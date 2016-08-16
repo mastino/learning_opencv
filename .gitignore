@@ -1,0 +1,13 @@
+# executables
+*.exe
+*.out
+
+# other
+*.avi
+*.zip
+*.jpg
+*.png
+
+# git script
+git_acp.bash
+
