@@ -31,7 +31,8 @@ const static int BLUR_SIZE = 10;
 //and keep track of its position.
 int theObject[2] = {0,0};
 //bounding rectangle of the object, we will use the center of this as its position.
-Rect objectBoundingRectangle = Rect(0,0,0,0);
+Rect2d objectBoundingRectangle = Rect2d(0,0,0,0);
+//Rect objectBoundingRectangle = Rect(0,0,0,0);
 
 
 //int to string helper function

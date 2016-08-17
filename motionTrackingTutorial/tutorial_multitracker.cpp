@@ -1,4 +1,5 @@
 // Brian Gravelle
+// not my code; from http://docs.opencv.org/3.1.0/d5/d07/tutorial_multitracker.html#gsc.tab=0
 
 /*----------------------------------------------
  * Usage:
@@ -44,6 +45,7 @@ int main( int argc, char** argv ){
 
   // container of the tracked objects
   vector<Rect2d> objects;
+  //vector<Rect> objects;
 
   // set input video
   std::string video = argv[1];
