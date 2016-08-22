@@ -7,6 +7,7 @@
 *.zip
 *.jpg
 *.png
+*.h264
 
 # git script
 git_acp.bash
