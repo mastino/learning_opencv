@@ -116,20 +116,24 @@ int main( int argc, char** argv ){
     //TODO somthing more interesting
     //  - establish lcation - remove obj if off screen
     //  - count direction
-    for(vector<Rect2d>::iterator it = trackers.objects.begin(); it < trackers.objects.end(); it++) {
-      rectangle( frame, *it, Scalar( 255, 0, 0 ), 2, 1 ); // draw rectangle around object
-      int mid_x = it->x + (it->width / 2);
-      int mid_y = it->y + (it->height / 2);
+    for(unsigned i = 0; i < trackers.objects.size(); i++) {
+      rectangle( frame, trackers.objects[i], Scalar( 255, 0, 0 ), 2, 1 ); // draw rectangle around object
+      int mid_x = trackers.objects[i].x + (trackers.objects[i].width / 2);
+      int mid_y = trackers.objects[i].y - (trackers.objects[i].height / 2);
 
-      trackers.objects.erase(*it);
-      if(mid_x > frame.rows)
+      if(mid_x > frame.rows){
+        trackers.objects.erase(trackers.objects.begin() + i);
         count_exit_1++;
-      else if(mid_x < 0)
+      } else if(mid_x < 0){
+        trackers.objects.erase(trackers.objects.begin() + i);
         count_exit_2++;
-      else if(mid_y > frame.cols)
+      } else if(mid_y > frame.cols){
+        trackers.objects.erase(trackers.objects.begin() + i);
         count_exit_3++;
-      else if(mid_y < 0)
+      } else if(mid_y < 0){
+        trackers.objects.erase(trackers.objects.begin() + i);
         count_exit_4++;
+      }
     }
 
     // show image with the tracked object
@@ -151,7 +155,7 @@ void get_usr_defined_objects(Mat &frame, VideoCapture &cap, vector<Rect2d> &obje
   cap >> frame;
   selectROI("tracker",frame,objects);
   if(objects.size() < 1)
-    return 0;
+    exit(1);
 }
 
 void show_help() {
@@ -161,5 +165,5 @@ void show_help() {
   " ./count_things.out /home/pi/videos/my_vid.h264\n"
   " ./count_things.out /home/pi/videos/my_vid.h264 MEDIANFLOW\n"
   << endl << endl;
-  return 0; 
+  exit(1); 
 }
