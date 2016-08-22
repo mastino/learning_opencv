@@ -121,6 +121,7 @@ int main( int argc, char** argv ){
       int mid_x = trackers.objects[i].x + (trackers.objects[i].width / 2);
       int mid_y = trackers.objects[i].y - (trackers.objects[i].height / 2);
 
+      // remove objects beyond bounds
       if(mid_x > frame.rows){
         trackers.objects.erase(trackers.objects.begin() + i);
         count_exit_1++;

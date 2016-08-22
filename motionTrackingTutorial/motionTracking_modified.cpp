@@ -1,6 +1,7 @@
 //motionTracking.cpp
 
 //Written by  Kyle Hounslow, January 2014
+//modified by Brian Gravelle to track multiple objects - August 2016
 
 //Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software")
 //, to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
@@ -27,16 +28,15 @@ static int SENSITIVITY_VALUE = 20; // original 20
 //size of blur used to smooth the image to remove possible noise and
 //increase the size of the object we are trying to track. (Much like dilate and erode)
 static int BLUR_SIZE = 10; // original 10
+static double MIN_OBJ_AREA = 10;
 //we'll have just one object to search for
 //and keep track of its position.
 int theObject[2] = {0,0};
-//bounding rectangle of the object, we will use the center of this as its position.
-Rect2d objectBoundingRectangle = Rect2d(0,0,0,0);
 //Rect objectBoundingRectangle = Rect(0,0,0,0);
 
-string intToString(int number);
 void searchForMovement(Mat thresholdImage, Mat &cameraFeed);
 int char_to_int(char* c);
+string intToString(int number);
 void show_help();
 
 
@@ -198,57 +198,58 @@ int main(int argc, char** argv){
 
 }
 
-//int to string helper function
-string intToString(int number){
-
-	//this function has a number input and string output
-	std::stringstream ss;
-	ss << number;
-	return ss.str();
-}
-
 void searchForMovement(Mat thresholdImage, Mat &cameraFeed){
-	//notice how we use the '&' operator for the cameraFeed. This is because we wish
-	//to take the values passed into the function and manipulate them, rather than just working with a copy.
-	//eg. we draw to the cameraFeed in this function which is then displayed in the main() function.
+
 	bool objectDetected=false;
+	int obj_count = 0, i = 0;
+	double obj_area = 0;
 	Mat temp;
+	vector<Rect2d> obj_rects;
 	thresholdImage.copyTo(temp);
-	//these two vectors needed for output of findContours
+	
 	vector< vector<Point> > contours;
 	vector<Vec4i> hierarchy;
-	//find contours of filtered image using openCV findContours function
-	//findContours(temp,contours,hierarchy,CV_RETR_CCOMP,CV_CHAIN_APPROX_SIMPLE );// retrieves all contours
-	findContours(temp,contours,hierarchy,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_SIMPLE );// retrieves external contours
 
-	//if contours vector is not empty, we have found some objects
-	if(contours.size()>0)objectDetected=true;
-	else objectDetected = false;
+	// retrieves external contours
+	findContours(temp,contours,hierarchy,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_SIMPLE );
 
-	if(objectDetected){
-		//the largest contour is found at the end of the contours vector
-		//we will simply assume that the biggest contour is the object we are looking for.
-		vector< vector<Point> > largestContourVec;
-		largestContourVec.push_back(contours.at(contours.size()-1));
-		//make a bounding rectangle around the largest contour then find its centroid
-		//this will be the object's final estimated position.
-		objectBoundingRectangle = boundingRect(largestContourVec.at(0));
-		int xpos = objectBoundingRectangle.x+objectBoundingRectangle.width/2;
-		int ypos = objectBoundingRectangle.y+objectBoundingRectangle.height/2;
+	if(contours.size() > 0){
+		i = contours.size()-1;
+		do {
+			obj_rects.push_back( boundingRect(contours.at(i)) );
+			obj_area = obj_rects.end()->area();
 
-		//update the objects positions by changing the 'theObject' array values
-		theObject[0] = xpos , theObject[1] = ypos;
+			//if(obj_area >= MIN_OBJ_AREA)
+				obj_count++;
+
+			i--;
+		} while(i >= 0);
+		// } while( (i >= 0) && (obj_area >= MIN_OBJ_AREA) );
+		// cout << endl << "obj count: " << obj_count << endl;
+		// cout << endl << "obj area:  " << obj_area << endl;
 	}
-	//make some temp x and y variables so we dont have to type out so much
-	int x = theObject[0];
-	int y = theObject[1];
-	//draw some crosshairs on the object
-	circle(cameraFeed,Point(x,y),20,Scalar(0,255,0),2);
-	line(cameraFeed,Point(x,y),Point(x,y-25),Scalar(0,255,0),2);
-	line(cameraFeed,Point(x,y),Point(x,y+25),Scalar(0,255,0),2);
-	line(cameraFeed,Point(x,y),Point(x-25,y),Scalar(0,255,0),2);
-	line(cameraFeed,Point(x,y),Point(x+25,y),Scalar(0,255,0),2);
-	putText(cameraFeed,"Tracking object at (" + intToString(x)+","+intToString(y)+")",Point(x,y),1,1,Scalar(255,0,0),2);
+
+	for(unsigned i = 0; i < obj_rects.size(); i++) {
+	  rectangle( cameraFeed, obj_rects[i], Scalar( 255, 0, 0 ), 2, 1 ); // draw rectangle around object
+	  int mid_x = obj_rects[i].x + (obj_rects[i].width / 2);
+	  int mid_y = obj_rects[i].y - (obj_rects[i].height / 2);
+	}
+
+	// //make a bounding rectangle around the largest contour then find its centroid
+	// //this will be the object's final estimated position.
+	// //make some temp x and y variables so we dont have to type out so much
+	// int xpos = obj_rects.at(0).x + obj_rects.at(0).width/2;  //for label i think
+	// int ypos = obj_rects.at(0).y + obj_rects.at(0).height/2; //for label i think
+	// theObject[0] = xpos , theObject[1] = ypos;
+	// int x = theObject[0];
+	// int y = theObject[1];
+	// //draw some crosshairs on the object
+	// circle(cameraFeed,Point(x,y),20,Scalar(0,255,0),2);
+	// line(cameraFeed,Point(x,y),Point(x,y-25),Scalar(0,255,0),2);
+	// line(cameraFeed,Point(x,y),Point(x,y+25),Scalar(0,255,0),2);
+	// line(cameraFeed,Point(x,y),Point(x-25,y),Scalar(0,255,0),2);
+	// line(cameraFeed,Point(x,y),Point(x+25,y),Scalar(0,255,0),2);
+	// putText(cameraFeed,"Tracking object at (" + intToString(x)+","+intToString(y)+")",Point(x,y),1,1,Scalar(255,0,0),2);
 
 
 
@@ -268,6 +269,13 @@ int char_to_int(char* c) {
 		mult *= 10;
 	}
 	return ret;
+}
+
+//int to string helper function
+string intToString(int number){
+	std::stringstream ss;
+	ss << number;
+	return ss.str();
 }
 
 void show_help() {
