@@ -75,6 +75,10 @@ int main(int argc, char** argv){
 	if(argc > 3) 
 		BLUR_SIZE = char_to_int(argv[3]);
 
+	if(argc > 4) 
+		MIN_OBJ_AREA = char_to_int(argv[4]);
+
+	namedWindow("Frame1", CV_WINDOW_NORMAL);
 
 	while(1){
 
@@ -114,8 +118,12 @@ int main(int argc, char** argv){
 		  threshold(differenceImage, thresholdImage, SENSITIVITY_VALUE, 255, THRESH_BINARY);
 			if(debugMode==true){
 				//show the difference image and threshold image
+				namedWindow("Difference Image", CV_WINDOW_NORMAL);
 				imshow("Difference Image", differenceImage);
+				resizeWindow("Difference Image", 512, 384);
+				namedWindow("Threshold Image", CV_WINDOW_NORMAL);
 				imshow("Threshold Image", thresholdImage);
+				resizeWindow("Threshold Image", 512, 384);
 			}else{
 				//if not in debug mode, destroy the windows so we don't see them anymore
 				destroyWindow("Difference Image");
@@ -130,7 +138,9 @@ int main(int argc, char** argv){
 
 			if(debugMode==true){
 				//show the threshold image after it's been "blurred"
+				namedWindow("Final Threshold Image", CV_WINDOW_NORMAL);
 				imshow("Final Threshold Image", thresholdImage);
+				resizeWindow("Final Threshold Image", 512, 384);
 			}
 			else {
 				//if not in debug mode, destroy the windows so we don't see them anymore
@@ -144,6 +154,7 @@ int main(int argc, char** argv){
 
 			//show our captured frame
 			imshow("Frame1",frame1);
+			resizeWindow("Frame1", 512, 384);
 			//check to see if a button has been pressed.
 			//this 10ms delay is necessary for proper operation of this program
 			//if removed, frames will not have enough time to referesh and a blank 
@@ -212,7 +223,7 @@ void searchForMovement(Mat thresholdImage, Mat &cameraFeed){
 	vector<Vec4i> hierarchy;
 
 	// retrieves external contours
-	findContours(temp,contours,hierarchy,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_SIMPLE );
+	findContours(temp, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 
 	if(contours.size() > 0){
 		i = contours.size()-1;
@@ -226,8 +237,8 @@ void searchForMovement(Mat thresholdImage, Mat &cameraFeed){
 			}
 
 			i--;
-		// } while(i >= 0);
-		} while( (i >= 0) && (obj_area >= MIN_OBJ_AREA) );
+		} while(i >= 0);
+		// } while( (i >= 0) && (obj_area >= MIN_OBJ_AREA) );
 		// cout << endl << "obj count: " << obj_count << endl;
 		// cout << endl << "obj area:  " << obj_area << endl;
 	}
@@ -283,10 +294,10 @@ string intToString(int number){
 
 void show_help() {
   cout << endl << 
-  " Usage: ./motionTracking_modified.out <video_name> [SENSITIVITY_VALUE] [BLUR_SIZE]\n"
+  " Usage: ./motionTracking_modified.out <video_name> [SENSITIVITY_VALUE] [BLUR_SIZE] [MIN_OBJ_AREA]\n"
   " examples:\n"
   " ./motionTracking_modified.out /home/pi/videos/my_vid.h264\n"
-  " ./motionTracking_modified.out /home/pi/videos/my_vid.h264 20 10\n"
+  " ./motionTracking_modified.out /home/pi/videos/my_vid.h264 20 10 10\n"
   << endl << endl;
   exit(1); 
 }
