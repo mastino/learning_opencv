@@ -204,6 +204,7 @@ void searchForMovement(Mat thresholdImage, Mat &cameraFeed){
 	int obj_count = 0, i = 0;
 	double obj_area = 0;
 	Mat temp;
+	Rect2d temp_rect;
 	vector<Rect2d> obj_rects;
 	thresholdImage.copyTo(temp);
 	
@@ -216,23 +217,25 @@ void searchForMovement(Mat thresholdImage, Mat &cameraFeed){
 	if(contours.size() > 0){
 		i = contours.size()-1;
 		do {
-			obj_rects.push_back( boundingRect(contours.at(i)) );
-			obj_area = obj_rects.end()->area();
+			temp_rect = boundingRect(contours.at(i));
+			obj_area = temp_rect.area();
 
-			//if(obj_area >= MIN_OBJ_AREA)
+			if(obj_area >= MIN_OBJ_AREA){
 				obj_count++;
+				obj_rects.push_back(Rect2d(temp_rect));
+			}
 
 			i--;
-		} while(i >= 0);
-		// } while( (i >= 0) && (obj_area >= MIN_OBJ_AREA) );
+		// } while(i >= 0);
+		} while( (i >= 0) && (obj_area >= MIN_OBJ_AREA) );
 		// cout << endl << "obj count: " << obj_count << endl;
 		// cout << endl << "obj area:  " << obj_area << endl;
 	}
 
-	for(unsigned i = 0; i < obj_rects.size(); i++) {
-	  rectangle( cameraFeed, obj_rects[i], Scalar( 255, 0, 0 ), 2, 1 ); // draw rectangle around object
-	  int mid_x = obj_rects[i].x + (obj_rects[i].width / 2);
-	  int mid_y = obj_rects[i].y - (obj_rects[i].height / 2);
+	for(unsigned j = 0; j < obj_rects.size(); j++) {
+	  rectangle( cameraFeed, obj_rects[j], Scalar( 255, 0, 0 ), 2, 1 ); // draw rectangle around object
+	  int mid_x = obj_rects[j].x + (obj_rects[j].width / 2);
+	  int mid_y = obj_rects[j].y - (obj_rects[j].height / 2);
 	}
 
 	// //make a bounding rectangle around the largest contour then find its centroid
