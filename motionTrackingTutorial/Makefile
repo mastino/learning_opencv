@@ -15,5 +15,5 @@ count_things: count_things.cpp
 		$(CC) -I/usr/include/ count_things.cpp -o count_things.out $(LIBS) -lopencv_tracking
 
 using_blobs: using_blobs.cpp
-		g++ `pkg-config opencv cvblob --cflags --libs` using_blobs.cpp -o using_blobs
+		g++ `pkg-config opencv cvblob --cflags --libs` using_blobs.cpp -o using_blobs.out
 
