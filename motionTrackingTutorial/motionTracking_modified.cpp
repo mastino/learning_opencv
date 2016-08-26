@@ -24,11 +24,11 @@ using namespace std;
 using namespace cv;
 
 //our sensitivity value to be used in the threshold() function
-static int SENSITIVITY_VALUE = 20; // original 20
+static int SENSITIVITY_VALUE = 50; // original 20
 //size of blur used to smooth the image to remove possible noise and
 //increase the size of the object we are trying to track. (Much like dilate and erode)
-static int BLUR_SIZE = 10; // original 10
-static double MIN_OBJ_AREA = 10;
+static int BLUR_SIZE = 200; // original 10
+static double MIN_OBJ_AREA = 1000;
 //we'll have just one object to search for
 //and keep track of its position.
 int theObject[2] = {0,0};
@@ -116,7 +116,7 @@ int main(int argc, char** argv){
 			absdiff(grayImage1, grayImage2, differenceImage);
 			//threshold intensity image at a given sensitivity value
 		  threshold(differenceImage, thresholdImage, SENSITIVITY_VALUE, 255, THRESH_BINARY);
-			if(debugMode==true){
+			if(debugMode){
 				//show the difference image and threshold image
 				namedWindow("Difference Image", CV_WINDOW_NORMAL);
 				imshow("Difference Image", differenceImage);
@@ -136,7 +136,7 @@ int main(int argc, char** argv){
 			//threshold again to obtain binary image from blur output
 		  threshold(thresholdImage, thresholdImage, SENSITIVITY_VALUE, 255, THRESH_BINARY);
 
-			if(debugMode==true){
+			if(debugMode){
 				//show the threshold image after it's been "blurred"
 				namedWindow("Final Threshold Image", CV_WINDOW_NORMAL);
 				imshow("Final Threshold Image", thresholdImage);
@@ -238,9 +238,6 @@ void searchForMovement(Mat thresholdImage, Mat &cameraFeed){
 
 			i--;
 		} while(i >= 0);
-		// } while( (i >= 0) && (obj_area >= MIN_OBJ_AREA) );
-		// cout << endl << "obj count: " << obj_count << endl;
-		// cout << endl << "obj area:  " << obj_area << endl;
 	}
 
 	for(unsigned j = 0; j < obj_rects.size(); j++) {
@@ -248,24 +245,6 @@ void searchForMovement(Mat thresholdImage, Mat &cameraFeed){
 	  int mid_x = obj_rects[j].x + (obj_rects[j].width / 2);
 	  int mid_y = obj_rects[j].y - (obj_rects[j].height / 2);
 	}
-
-	// //make a bounding rectangle around the largest contour then find its centroid
-	// //this will be the object's final estimated position.
-	// //make some temp x and y variables so we dont have to type out so much
-	// int xpos = obj_rects.at(0).x + obj_rects.at(0).width/2;  //for label i think
-	// int ypos = obj_rects.at(0).y + obj_rects.at(0).height/2; //for label i think
-	// theObject[0] = xpos , theObject[1] = ypos;
-	// int x = theObject[0];
-	// int y = theObject[1];
-	// //draw some crosshairs on the object
-	// circle(cameraFeed,Point(x,y),20,Scalar(0,255,0),2);
-	// line(cameraFeed,Point(x,y),Point(x,y-25),Scalar(0,255,0),2);
-	// line(cameraFeed,Point(x,y),Point(x,y+25),Scalar(0,255,0),2);
-	// line(cameraFeed,Point(x,y),Point(x-25,y),Scalar(0,255,0),2);
-	// line(cameraFeed,Point(x,y),Point(x+25,y),Scalar(0,255,0),2);
-	// putText(cameraFeed,"Tracking object at (" + intToString(x)+","+intToString(y)+")",Point(x,y),1,1,Scalar(255,0,0),2);
-
-
 
 }
 
